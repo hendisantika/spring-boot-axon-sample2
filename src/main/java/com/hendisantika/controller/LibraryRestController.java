@@ -1,7 +1,9 @@
 package com.hendisantika.controller;
 
 import com.hendisantika.aggregate.Library;
+import com.hendisantika.command.RegisterBookCommand;
 import com.hendisantika.command.RegisterLibraryCommand;
+import com.hendisantika.models.BookBean;
 import com.hendisantika.models.LibraryBean;
 import com.hendisantika.queries.GetLibraryQuery;
 import lombok.RequiredArgsConstructor;
@@ -44,5 +46,11 @@ public class LibraryRestController {
     public Library getLibrary(@PathVariable Integer library) throws InterruptedException, ExecutionException {
         CompletableFuture<Library> future = queryGateway.query(new GetLibraryQuery(library), Library.class);
         return future.get();
+    }
+
+    @PostMapping("/{library}/book")
+    public String addBook(@PathVariable Integer library, @RequestBody BookBean book) {
+        commandGateway.send(new RegisterBookCommand(library, book.getIsbn(), book.getTitle()));
+        return "Saved";
     }
 }
