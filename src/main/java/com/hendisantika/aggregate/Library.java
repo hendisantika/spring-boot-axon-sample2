@@ -6,11 +6,13 @@ import com.hendisantika.events.BookCreatedEvent;
 import com.hendisantika.events.LibraryCreatedEvent;
 import lombok.Data;
 import org.axonframework.commandhandling.CommandHandler;
+import org.axonframework.eventsourcing.EventSourcingHandler;
 import org.axonframework.modelling.command.AggregateIdentifier;
 import org.axonframework.modelling.command.AggregateLifecycle;
 import org.axonframework.spring.stereotype.Aggregate;
 import org.springframework.util.Assert;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -53,4 +55,10 @@ public class Library {
         AggregateLifecycle.apply(new BookCreatedEvent(cmd.getLibraryId(), cmd.getIsbn(), cmd.getTitle()));
     }
 
+    @EventSourcingHandler
+    private void handleCreatedEvent(LibraryCreatedEvent event) {
+        libraryId = event.getLibraryId();
+        name = event.getName();
+        isbnBooks = new ArrayList<>();
+    }
 }
