@@ -1,0 +1,41 @@
+# curl --location --request POST 'localhost:8080/api/libraries'
+#--header 'Content-Type: application/json'
+#--data-raw '{
+#    "id": 1,
+#    "name": "Test1"
+#}'
+### ADD Library
+POST localhost:8080/api/libraries
+Content-Type: application/json
+
+{
+  "libraryId": 1,
+  "name": "Library Test1"
+}
+
+<> 2021-11-17T083336.200.txt
+
+### Get Library
+GET localhost:8080/api/libraries/1
+
+<> 2021-11-17T083346.200.json
+<> 2021-11-17T082817.500.json
+
+### Add Book
+POST http://localhost:8080/api/libraries/1/book
+Content-Type: application/json
+
+{
+  "isbn": 111,
+  "title": "Book Title Test1"
+}
+
+<> 2021-11-17T083405.200.txt
+<> 2021-11-17T083206.200.txt
+<> 2021-11-17T083147.405.json
+
+### Get Book
+GET http://localhost:8080/api/libraries/1/book
+
+<> 2021-11-17T083410.200.json
+<> 2021-11-17T083241.200.json
