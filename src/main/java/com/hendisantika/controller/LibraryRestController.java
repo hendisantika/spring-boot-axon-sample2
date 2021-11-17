@@ -5,9 +5,11 @@ import com.hendisantika.command.RegisterBookCommand;
 import com.hendisantika.command.RegisterLibraryCommand;
 import com.hendisantika.models.BookBean;
 import com.hendisantika.models.LibraryBean;
+import com.hendisantika.queries.GetBooksQuery;
 import com.hendisantika.queries.GetLibraryQuery;
 import lombok.RequiredArgsConstructor;
 import org.axonframework.commandhandling.gateway.CommandGateway;
+import org.axonframework.messaging.responsetypes.ResponseTypes;
 import org.axonframework.queryhandling.QueryGateway;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -52,5 +55,10 @@ public class LibraryRestController {
     public String addBook(@PathVariable Integer library, @RequestBody BookBean book) {
         commandGateway.send(new RegisterBookCommand(library, book.getIsbn(), book.getTitle()));
         return "Saved";
+    }
+
+    @GetMapping("/{library}/book")
+    public List<BookBean> addBook(@PathVariable Integer library) throws InterruptedException, ExecutionException {
+        return queryGateway.query(new GetBooksQuery(library), ResponseTypes.multipleInstancesOf(BookBean.class)).get();
     }
 }
