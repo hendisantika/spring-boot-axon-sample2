@@ -9,6 +9,7 @@ import org.axonframework.queryhandling.QueryHandler;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -40,4 +41,12 @@ public class BookRepositoryProjector {
         return bookRepository.findByLibraryId(query.getLibraryId()).stream().map(toBook()).collect(Collectors.toList());
     }
 
+    private Function<BookEntity, BookBean> toBook() {
+        return e -> {
+            BookBean book = new BookBean();
+            book.setIsbn(e.getIsbn());
+            book.setTitle(e.getTitle());
+            return book;
+        };
+    }
 }
