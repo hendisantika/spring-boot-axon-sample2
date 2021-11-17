@@ -61,4 +61,9 @@ public class Library {
         name = event.getName();
         isbnBooks = new ArrayList<>();
     }
+
+    @EventSourcingHandler
+    private void addBook(BookCreatedEvent event) {
+        isbnBooks.add(event.getIsbn());
+    }
 }
