@@ -1,8 +1,13 @@
 package com.hendisantika.aggregate;
 
+import com.hendisantika.command.RegisterLibraryCommand;
+import com.hendisantika.events.LibraryCreatedEvent;
 import lombok.Data;
+import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.modelling.command.AggregateIdentifier;
+import org.axonframework.modelling.command.AggregateLifecycle;
 import org.axonframework.spring.stereotype.Aggregate;
+import org.springframework.util.Assert;
 
 import java.util.List;
 
@@ -30,4 +35,11 @@ public class Library {
         // For Axon instantiation
     }
 
+    @CommandHandler
+    public Library(RegisterLibraryCommand cmd) {
+        Assert.notNull(cmd.getLibraryId(), "ID should not be null");
+        Assert.notNull(cmd.getName(), "Name should not be null");
+
+        AggregateLifecycle.apply(new LibraryCreatedEvent(cmd.getLibraryId(), cmd.getName()));
+    }
 }
