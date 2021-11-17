@@ -1,9 +1,15 @@
 package com.hendisantika.repository;
 
 import com.hendisantika.events.BookCreatedEvent;
+import com.hendisantika.models.BookBean;
+import com.hendisantika.queries.GetBooksQuery;
 import lombok.RequiredArgsConstructor;
 import org.axonframework.eventhandling.EventHandler;
+import org.axonframework.queryhandling.QueryHandler;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by IntelliJ IDEA.
@@ -28,4 +34,10 @@ public class BookRepositoryProjector {
         book.setTitle(event.getTitle());
         bookRepository.save(book);
     }
+
+    @QueryHandler
+    public List<BookBean> getBooks(GetBooksQuery query) {
+        return bookRepository.findByLibraryId(query.getLibraryId()).stream().map(toBook()).collect(Collectors.toList());
+    }
+
 }
