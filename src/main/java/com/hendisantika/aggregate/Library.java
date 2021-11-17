@@ -1,6 +1,8 @@
 package com.hendisantika.aggregate;
 
+import com.hendisantika.command.RegisterBookCommand;
 import com.hendisantika.command.RegisterLibraryCommand;
+import com.hendisantika.events.BookCreatedEvent;
 import com.hendisantika.events.LibraryCreatedEvent;
 import lombok.Data;
 import org.axonframework.commandhandling.CommandHandler;
@@ -42,4 +44,13 @@ public class Library {
 
         AggregateLifecycle.apply(new LibraryCreatedEvent(cmd.getLibraryId(), cmd.getName()));
     }
+
+    @CommandHandler
+    public void addBook(RegisterBookCommand cmd) {
+        Assert.notNull(cmd.getLibraryId(), "ID should not be null");
+        Assert.notNull(cmd.getIsbn(), "Book ISBN should not be null");
+
+        AggregateLifecycle.apply(new BookCreatedEvent(cmd.getLibraryId(), cmd.getIsbn(), cmd.getTitle()));
+    }
+
 }
