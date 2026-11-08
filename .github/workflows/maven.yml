@@ -14,10 +14,16 @@ on:
   pull_request:
     branches: [ "main" ]
 
+permissions:
+  contents: read
+
 jobs:
   build:
 
     runs-on: ubuntu-latest
+    permissions:
+      # write is required by the dependency submission step
+      contents: write
 
     steps:
     - uses: actions/checkout@v7
@@ -32,4 +38,5 @@ jobs:
 
     # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
     - name: Update dependency graph
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
       uses: advanced-security/maven-dependency-submission-action@a64327a7329c9939cf675e458452febe1894a70c

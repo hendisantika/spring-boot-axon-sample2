@@ -15,6 +15,7 @@
     <description>spring-boot-axon-sample2</description>
     <properties>
         <java.version>21</java.version>
+        <axon.version>4.13.2</axon.version>
     </properties>
     <dependencies>
         <dependency>
@@ -28,7 +29,7 @@
         <dependency>
             <groupId>org.axonframework</groupId>
             <artifactId>axon-spring-boot-starter</artifactId>
-            <version>5.0.0-preview</version>
+            <version>${axon.version}</version>
         </dependency>
         <dependency>
             <groupId>com.h2database</groupId>
@@ -49,6 +50,18 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
