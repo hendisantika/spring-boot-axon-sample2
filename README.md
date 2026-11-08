@@ -1,5 +1,47 @@
 # Spring Boot Axon Sample2
 
+[![Java CI with Maven](https://github.com/hendisantika/spring-boot-axon-sample2/actions/workflows/maven.yml/badge.svg)](https://github.com/hendisantika/spring-boot-axon-sample2/actions/workflows/maven.yml)
+![Java](https://img.shields.io/badge/Java-25-orange?logo=openjdk)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1.2-brightgreen?logo=springboot)
+![Axon Framework](https://img.shields.io/badge/Axon%20Framework-4.13.2-blue)
+![Dependabot](https://img.shields.io/badge/Dependabot-enabled-025E8C?logo=dependabot)
+
+## Tech Stack
+
+| Component         | Version                                   |
+|-------------------|-------------------------------------------|
+| JDK               | 25 (Eclipse Temurin in CI)                |
+| Spring Boot       | 4.1.2                                     |
+| Axon Framework    | 4.13.2 (`axon-spring-boot-starter`)       |
+| Database          | H2 (in-memory) + Spring Data JPA          |
+| Build tool        | Maven (wrapper `./mvnw` included)         |
+| Boilerplate       | Lombok (registered as annotation processor) |
+
+## Quick Start
+
+```shell
+# 1. Start Axon Server
+docker run -d --name axonserver -p 8024:8024 -p 8124:8124 axoniq/axonserver
+
+# 2. Build & test (requires JDK 25)
+./mvnw clean package
+
+# 3. Run the application
+./mvnw spring-boot:run
+```
+
+> Tests run **without** Axon Server: `src/test/resources/application.properties` sets
+> `axon.axonserver.enabled=false`, so Axon falls back to an embedded JPA event store.
+
+## CI/CD & Dependency Updates
+
+- **GitHub Actions** (`.github/workflows/maven.yml`) builds and tests the project with JDK 25 on every push and pull
+  request to `main`, then submits the Maven dependency graph to GitHub on pushes to `main`.
+- **Dependabot** (`.github/dependabot.yml`) checks Maven dependencies and GitHub Actions every Monday at 05:00
+  (Asia/Jakarta). Updates are grouped (Spring Boot, Axon, test dependencies, minor/patch, GitHub Actions), labeled and
+  use conventional commit prefixes (`chore(deps)`, `ci(deps)`). Axon major upgrades are ignored because Axon 5 brings a
+  breaking API and must be migrated manually.
+
 We already introduced [CQRS](https://martinfowler.com/bliki/CQRS.html) architectures a while
 ago [here](https://sgitario.github.io/applying-event-sourcing-and-qcrs-in/). The focus was to migrate a legacy monolith
 application into a CQRS architecture. However, we didn't go in deep by actually coding it. Let's do this
@@ -49,27 +91,48 @@ Feel free to startup a server instance yourself by downloading the binaries
 from [here](http://www.axonframework.org/download).
 
 In order to check the installation was succeded, browse to "http://localhost:8024/" and we should see the Axon
-dashboard:
-
-![Axon Dashboard]({{ site.url }}{{ site.baseurl }}/images/axon-installation-1.png)
+dashboard.
 
 ## Axon Framework: Maven Dependencies
 
 We'll
-use [the Axon Spring Boot Starter maven dependency](https://mvnrepository.com/artifact/org.axonframework/axon-core/4.0-M2)
+use [the Axon Spring Boot Starter maven dependency](https://mvnrepository.com/artifact/org.axonframework/axon-spring-boot-starter)
 in the *pom.xml* for all our projects:
 
 ```xml
+<properties>
+    <java.version>25</java.version>
+    <axon.version>4.13.2</axon.version>
+</properties>
+
 <dependency>
     <groupId>org.axonframework</groupId>
     <artifactId>axon-spring-boot-starter</artifactId>
-    <version>4.5</version>
+    <version>${axon.version}</version>
 </dependency>
 
 <dependency>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-web</artifactId>
 </dependency>
+```
+
+Since JDK 23 annotation processors are no longer discovered implicitly, so Lombok is registered explicitly in the
+`maven-compiler-plugin`:
+
+```xml
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-compiler-plugin</artifactId>
+    <configuration>
+        <annotationProcessorPaths>
+            <path>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+            </path>
+        </annotationProcessorPaths>
+    </configuration>
+</plugin>
 ```
 
 This is the easiest way to get warm with Axon. Spring Boot eases the configuration using default components in Axon. For
@@ -465,25 +528,25 @@ public class LibraryRestController {
 		this.queryGateway = queryGateway;
 	}
 
-	@PostMapping("/api/library")
+	@PostMapping("/api/libraries")
 	public String addLibrary(@RequestBody LibraryBean library) {
 		commandGateway.send(new RegisterLibraryCommand(library.getLibraryId(), library.getName()));
 		return "Saved";
 	}
 
-	@GetMapping("/api/library/{library}")
+	@GetMapping("/api/libraries/{library}")
 	public Library getLibrary(@PathVariable Integer library) throws InterruptedException, ExecutionException {
 		return queryGateway.query(new GetLibraryQuery(library), Library.class).get();
 	}
 
-	@PostMapping("/api/library/{library}/book")
+	@PostMapping("/api/libraries/{library}/book")
 	public String addBook(@PathVariable Integer library, @RequestBody BookBean book) {
 		commandGateway.send(new RegisterBookCommand(library, book.getIsbn(), book.getTitle()),
 				LoggingCallback.INSTANCE);
 		return "Added";
 	}
 
-	@GetMapping("/api/library/{library}/book")
+	@GetMapping("/api/libraries/{library}/book")
 	public List<BookBean> addBook(@PathVariable Integer library) throws InterruptedException, ExecutionException {
 		return queryGateway.query(new GetBooksQuery(library), ResponseTypes.multipleInstancesOf(BookBean.class)).get();
 	}
@@ -513,7 +576,7 @@ the Axon dashboard in the browser.
 - Add a library:
 
 ```
-POST: http://localhost:8080/api/library
+POST: http://localhost:8080/api/libraries
 BODY:
 {
 	"libraryId": 1,
@@ -524,7 +587,7 @@ BODY:
 - Add a book:
 
 ```
-POST: http://localhost:8080/api/library/1/book
+POST: http://localhost:8080/api/libraries/1/book
 BODY:
 {
 	"isbn":"123460",
@@ -536,13 +599,13 @@ BODY:
 - Get books in a library:
 
 ```
-GET: http://localhost:8080/api/library/1/book
+GET: http://localhost:8080/api/libraries/1/book
 ```
 
 - Get Library:
 
 ```
-GET: http://localhost:8080/api/library/1
+GET: http://localhost:8080/api/libraries/1
 ```
 
 # Conclusion
