@@ -1,13 +1,69 @@
+# Dependabot configuration
+# Docs: https://docs.github.com/en/code-security/dependabot/working-with-dependabot/dependabot-options-reference
 version: 2
 updates:
-  - package-ecosystem: maven
+  # Maven dependencies (pom.xml)
+  - package-ecosystem: "maven"
     directory: "/"
     schedule:
-      interval: daily
-      time: '05:00'
-      timezone: Asia/Jakarta
+      interval: "weekly"
+      day: "monday"
+      time: "05:00"
+      timezone: "Asia/Jakarta"
     open-pull-requests-limit: 10
+    target-branch: "main"
+    labels:
+      - "dependencies"
+      - "java"
+    assignees:
+      - "hendisantika"
+    commit-message:
+      prefix: "chore(deps)"
+      prefix-development: "chore(deps-dev)"
+      include: "scope"
+    rebase-strategy: "auto"
+    groups:
+      spring-boot:
+        patterns:
+          - "org.springframework.boot*"
+          - "org.springframework*"
+      axon:
+        patterns:
+          - "org.axonframework*"
+          - "io.axoniq*"
+      test-dependencies:
+        dependency-type: "development"
+        patterns:
+          - "*"
+      maven-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
+        patterns:
+          - "*"
+    ignore:
+      # Axon 5 has a breaking API (new modules & packages); upgrade manually
+      - dependency-name: "org.axonframework:*"
+        update-types: [ "version-update:semver-major" ]
+
+  # GitHub Actions workflows (.github/workflows)
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "monday"
+      time: "05:00"
+      timezone: "Asia/Jakarta"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "github_actions"
+    assignees:
+      - "hendisantika"
+    commit-message:
+      prefix: "ci(deps)"
+      include: "scope"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
